@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Planner Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.2.0/fullcalendar.min.css"/>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            background: #1f1f1f;
+            color: #f5f5f5;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            height: 100vh;
+            background: #2e2e2e;
+            color: white;
+            padding-top: 20px;
+            box-shadow: 3px 0 6px rgba(0, 0, 0, 0.5);
+        }
+        .sidebar a {
+            display: block;
+            color: white;
+            text-decoration: none;
+            padding: 12px 20px;
+            font-size: 1.1rem;
+            margin: 10px 0;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+        }
+        .sidebar a:hover {
+            background: #4e54c8;
+        }
+        .content {
+            margin-left: 250px;
+            padding: 30px;
+        }
+        header {
+            background: #333;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        header h1 {
+            font-size: 1.8rem;
+        }
+        .analytics {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .analytics .card {
+            background: #2a2a2a;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3);
+            transition: box-shadow 0.3s ease;
+        }
+        .analytics .card:hover {
+            box-shadow: 0 12px 18px rgba(0, 0, 0, 0.4);
+        }
+        .analytics .card h3 {
+            color: #4e54c8;
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+        }
+        .analytics .card p {
+            font-size: 1.1rem;
+            color: #ddd;
+        }
+        .card .details {
+            margin-top: 15px;
+            font-size: 1rem;
+            color: #bbb;
+        }
+        .card .details p {
+            margin: 5px 0;
+        }
+        .graph-section {
+            margin-top: 50px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .graph-container {
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+            background: #333;
+            border-radius: 10px;
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3);
+        }
+        .graph-container canvas {
+            width: 100%;
+            height: 400px;
+            max-height: 500px;
+            object-fit: cover;
+        }
+        .upcoming-events {
+            margin-top: 50px;
+        }
+        .upcoming-events h2 {
+            text-align: center;
+            font-size: 1.5rem;
+            color: #f5f5f5;
+            margin-bottom: 30px;
+        }
+        .event-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+        }
+        .event-item .event-info {
+            flex: 1;
+            padding-left: 20px;
+        }
+        .event-item .event-info h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #4e54c8;
+        }
+        .event-item .event-info p {
+            margin-top: 5px;
+            color: #ddd;
+        }
+        .recommended-badge {
+            background-color: #4e54c8;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 10px;
+            font-size: 1rem;
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-left: 20px;
+        }
+        .calendar-section {
+            margin-top: 50px;
+        }
+        .calendar-section h2 {
+            text-align: center;
+            font-size: 1.5rem;
+            color: #f5f5f5;
+            margin-bottom: 30px;
+        }
+        .calendar-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .calendar-container .fc {
+            width: 100%;
+            max-width: 900px;
+        }
+        .attendee-demographics {
+            margin-top: 50px;
+        }
+        .attendee-demographics h2 {
+            text-align: center;
+            font-size: 1.5rem;
+            color: #f5f5f5;
+            margin-bottom: 30px;
+        }
+        .attendee-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+        }
+        .attendee-item .attendee-info {
+            flex: 1;
+            padding-left: 20px;
+        }
+        .attendee-item .attendee-info h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #4e54c8;
+        }
+        .attendee-item .attendee-info p {
+            margin-top: 5px;
+            color: #ddd;
+        }
+        .sidebar a.active {
+            background-color: #3737a6;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>GenSpark</h2>
+        <a href="./Dashboard.html" >Dashboard</a>
+        <a href="#">Analytics</a>
+        <a href="./Campaign-Manager.html">Campaign</a>
+        <a href="./Customer.html" >Customer Analysis</a>
+        <a href="./Event_Planner.html" class="active">Events</a>
+        <a href="#">Settings</a>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+        <header>
+            <h1>Event Planner Dashboard</h1>
+        </header>
+
+        <section class="analytics">
+            <div class="card">
+                <i class="fas fa-calendar-check" style="font-size: 2rem;"></i>
+                <h3>Upcoming Events</h3>
+                <p>5 events scheduled in the next 3 months</p>
+                <div class="details">
+                    <p>Next event: "Tech Conference 2025"</p>
+                    <p>Over 500 registered attendees</p>
+                    <p>8 speakers confirmed</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <i class="fas fa-users" style="font-size: 2rem;"></i>
+                <h3>Total Attendees</h3>
+                <p>10,000+</p>
+                <div class="details">
+                    <p>50% of attendees are repeat visitors</p>
+                    <p>25% first-time event goers</p>
+                    <p>75% from urban areas</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <i class="fas fa-ticket-alt" style="font-size: 2rem;"></i>
+                <h3>Event Success Rate</h3>
+                <p>85% event success rate</p>
+                <div class="details">
+                    <p>90% positive feedback from attendees</p>
+                    <p>70% of events exceeded attendance goals</p>
+                    <p>80% speakers rated "excellent"</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <i class="fas fa-dollar-sign" style="font-size: 2rem;"></i>
+                <h3>Revenue Generated</h3>
+                <p>$2.5M</p>
+                <div class="details">
+                    <p>65% from ticket sales</p>
+                    <p>20% from sponsors</p>
+                    <p>15% from merchandise</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Upcoming Events -->
+        <section class="upcoming-events">
+            <h2>Upcoming Events</h2>
+            <div class="event-item">
+                <div class="event-info">
+                    <h3>Tech Conference 2025 <span class="recommended-badge">Recommended by AI</span></h3>
+                    <p>"A conference on the latest in AI and quantum computing"</p>
+                </div>
+            </div>
+            <div class="event-item">
+                <div class="event-info">
+                    <h3>Marketing Summit 2025</h3>
+                    <p>"Bringing together marketing professionals from around the world"</p>
+                </div>
+            </div>
+            <div class="event-item">
+                <div class="event-info">
+                    <h3>Health & Wellness Expo</h3>
+                    <p>"A fair focused on improving lifestyle and wellness"</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Calendar Section -->
+        <section class="calendar-section">
+            <h2>Event Calendar</h2>
+            <div class="calendar-container">
+                <div id="calendar"></div>
+            </div>
+        </section>
+
+        <!-- Attendee Demographics -->
+        <section class="attendee-demographics">
+            <h2>Attendee Demographics</h2>
+            <div class="attendee-item">
+                <div class="attendee-info">
+                    <h3>John Doe</h3>
+                    <p>Marketing Executive</p>
+                </div>
+            </div>
+            <div class="attendee-item">
+                <div class="attendee-info">
+                    <h3>Jane Smith</h3>
+                    <p>Software Engineer</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.2.0/fullcalendar.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#calendar').fullCalendar({
+                events: [
+                    {
+                        title: 'Tech Conference 2025',
+                        start: '2025-06-15',
+                        description: 'A conference on AI and Quantum Computing',
+                    },
+                    {
+                        title: 'Marketing Summit 2025',
+                        start: '2025-07-20',
+                        description: 'Bringing together top marketing professionals',
+                    },
+                    {
+                        title: 'Health & Wellness Expo',
+                        start: '2025-08-05',
+                        description: 'Promoting healthy living and wellness',
+                    },
+                ],
+                header: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'month,agendaWeek,agendaDay'
+                },
+                eventClick: function(event) {
+                    alert('Event: ' + event.title + '\n' + 'Description: ' + event.description);
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>

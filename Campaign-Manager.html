@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampaignGPT</title>
+    <style>
+        /* General body styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #2e2e3e;
+            color: #ffffff;
+            display: flex;
+            flex-direction: row;
+            height: 100vh;
+        }
+
+        /* Sidebar styles */
+        .sidebar {
+            background-color: #1f1f1f;
+            color: white;
+            width: 250px;
+            padding: 1rem;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin: 0.5rem 0;
+        }
+        .sidebar a:hover,
+        .sidebar a.active {
+            background-color: #3737a6;
+        }
+
+        /* Main container styles */
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        /* Header styles */
+        .header {
+            background-color: #2e2e3e;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            font-size: 1.5rem;
+        }
+
+        /* Chat container styles */
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            background-color: #3e3e50;
+        }
+        .chat-bubble {
+            max-width: 60%;
+            margin: 0.5rem;
+            padding: 1rem;
+            border-radius: 10px;
+            word-wrap: break-word;
+        }
+        .chat-bubble.user {
+            background-color: #575fcf;
+            align-self: flex-end;
+            color: white;
+        }
+        .chat-bubble.bot {
+            background-color: #4e54c8;
+            align-self: flex-start;
+            color: white;
+        }
+
+        /* Add Campaign Button */
+        .chat-bubble .add-campaign {
+            display: flex;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+        .add-campaign button {
+            background-color: #3737a6;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .add-campaign button:hover {
+            background-color: #292982;
+        }
+
+        /* Input container styles */
+        .input-container {
+            display: flex;
+            padding: 1rem;
+            background-color: #2e2e3e;
+            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .input-container input {
+            flex: 1;
+            padding: 0.5rem;
+            font-size: 1rem;
+            border: 1px solid #4e54c8;
+            border-radius: 4px;
+            color: white;
+            background-color: #3e3e50;
+        }
+        .input-container input:focus {
+            outline: none;
+            border-color: #3737a6;
+        }
+        .input-container button {
+            margin-left: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            background-color: #4e54c8;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .input-container button:hover {
+            background-color: #3737a6;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>GenSpark</h2>
+        <a href="./Dashboard.html" >Dashboard</a>
+        <a href="#">Analytics</a>
+        <a href="./Campaign-Manager.html" class="active">Campaign</a>
+        <a href="./Customer.html" >Customer Analysis</a>
+        <a href="./Event_Planner.html">Events</a>
+        <a href="#">Settings</a>
+    </div>
+
+    <!-- Main container -->
+    <div class="main-container">
+        <div class="header">CampaignGPT</div>
+        <div id="chat" class="chat-container">
+            <div class="chat-bubble bot">Welcome! Upload your customer data, and I’ll help generate campaign ideas based on NLP analysis. First, choose a type of campaign you'd like to explore:
+                <ul>
+                    <li>1. Marketing Campaign</li>
+                    <li>2. Loyalty Program</li>
+                    <li>3. Seasonal Promotions</li>
+                    <li>4. Referral Program</li>
+                    <li>5. Product Launch</li>
+                </ul>
+                Reply with the number corresponding to your choice.
+            </div>
+        </div>
+        <div class="input-container">
+            <input id="userInput" type="text" placeholder="Type your message here...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const chatContainer = document.getElementById('chat');
+        const userInput = document.getElementById('userInput');
+
+        const campaignIdeas = {
+            marketing: [
+                "Social media ad campaign to increase brand awareness.",
+                "Email marketing campaign for product upselling.",
+                "Influencer partnerships for broader reach."
+            ],
+            loyalty: [
+                "Loyalty rewards program for top customers.",
+                "Tier-based VIP benefits for frequent buyers.",
+                "Anniversary discounts for long-term customers."
+            ],
+            seasonal: [
+                "Holiday season discounts to boost sales.",
+                "Back-to-school promotions for relevant products.",
+                "Summer sale campaigns targeting vacation-goers."
+            ],
+            referral: [
+                "Referral programs to increase customer base.",
+                "Double-sided rewards for both referrer and referee.",
+                "Gamified referral system with leaderboards."
+            ],
+            launch: [
+                "Exclusive early access to new products for VIP customers.",
+                "Launch event with giveaways to create buzz.",
+                "Collaborations with influencers to amplify the product launch."
+            ]
+        };
+
+        let selectedType = null;
+
+        function appendMessage(content, sender, showAddButton = false) {
+            const bubble = document.createElement('div');
+            bubble.classList.add('chat-bubble', sender);
+            bubble.innerHTML = content;
+            if (showAddButton) {
+                const buttonContainer = document.createElement('div');
+                buttonContainer.classList.add('add-campaign');
+                const addButton = document.createElement('button');
+                addButton.textContent = "Add Campaign";
+                addButton.onclick = () => alert('Campaign Added!');
+                buttonContainer.appendChild(addButton);
+                bubble.appendChild(buttonContainer);
+            }
+            chatContainer.appendChild(bubble);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function generateResponse(message) {
+            if (!selectedType) {
+                if (!isNaN(message)) {
+                    const choice = parseInt(message);
+                    switch (choice) {
+                        case 1: selectedType = 'marketing'; break;
+                        case 2: selectedType = 'loyalty'; break;
+                        case 3: selectedType = 'seasonal'; break;
+                        case 4: selectedType = 'referral'; break;
+                        case 5: selectedType = 'launch'; break;
+                        default: return "Please select a valid number from the list.";
+                    }
+                    const ideas = campaignIdeas[selectedType].map((idea, index) => `${index + 1}. ${idea}`).join('<br>');
+                    return `Great choice! Here are some ideas for a ${selectedType} campaign:<br><br>${ideas}<br><br>Reply with the number of the idea you'd like to explore!`;
+                }
+                return "Please select a campaign type by replying with the corresponding number.";
+            } else {
+                if (!isNaN(message)) {
+                    const choice = parseInt(message);
+                    const ideas = campaignIdeas[selectedType];
+                    if (choice > 0 && choice <= ideas.length) {
+                        return { text: `Great choice! You selected: \"${ideas[choice - 1]}\". Let's start building this campaign.`, showAddButton: true };
+                    }
+                    return "Please select a valid number from the list.";
+                }
+                return "I didn't understand that. Could you specify which idea you'd like to explore?";
+            }
+        }
+
+        function sendMessage() {
+            const message = userInput.value.trim();
+            if (message === '') return;
+
+            appendMessage(message, 'user');
+            userInput.value = '';
+
+            setTimeout(() => {
+                const response = generateResponse(message);
+                if (typeof response === 'string') {
+                    appendMessage(response, 'bot');
+                } else {
+                    appendMessage(response.text, 'bot', response.showAddButton);
+                }
+            }, 500);
+        }
+    </script>
+</body>
+</html>
+
